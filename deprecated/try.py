@@ -31,6 +31,8 @@ test = tk.texts_to_sequences(test)
 test = pad_sequences(test, maxlen=MAX_LENGTH)
 out = model.predict(test)
 
+print(type(out))
+print(out.dtype)
 for i in range(len(out)):
     print(testing[i],end=" : ")
     if out[i]>=0.5:

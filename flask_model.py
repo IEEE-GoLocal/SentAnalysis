@@ -13,7 +13,7 @@ app = flask.Flask(__name__)
 
 # load the model, and pass in the custom metric function
 global graph
-graph = tf.get_default_graph()
+graph = tf.compat.v1.get_default_graph()
 model = load_model('rnn_model.h5')
 
 import re
@@ -47,12 +47,22 @@ def predict():
         cmt = normalize_texts([cmt])
         cmt = tokenizer.texts_to_sequences(cmt)
         cmt = pad_sequences(cmt, maxlen=MAX_LENGTH)
-        with graph.as_default():
-            data["prediction"] = str(model.predict(cmt)[0][0])
-            data["success"] = True
+        pred = model.predict(cmt)[0][0]
+
+        sentiment = "Negative"
+        if pred>=0.5:
+            sentiment = "Positive"
+        data["prediction"] = sentiment
+        data["success"] = True
 
     # return a response in json format 
     return flask.jsonify(data)    
 
 # start the flask app, allow remote connections 
-app.run(host='0.0.0.0')
+app.run(host='0.0.0.0',port=5555)
+
+
+'''
+Run this on terminal : curl -X POST -H "Content-Type: application/json" -d "{ \"msg\":
+\"This product is good\" }" http://10.53.98.171:5555/predict
+'''
